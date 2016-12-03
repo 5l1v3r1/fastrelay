@@ -2,7 +2,7 @@
 Making it easier to run your own Tor Relay Node.
 
 ##Usage
-Log into server and download the raw fastrely.sh script and then execute it.<br>
+Log into server and download the raw fastrelay.sh script and then execute it.<br>
 - `wget https://raw.githubusercontent.com/torworld/fastrelay/master/fastrelay.sh`<br>
 - `bash fastrelay.sh`
 
