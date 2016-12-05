@@ -18,9 +18,9 @@
 # title            :FastRelay
 # description      :This script will make it super easy to run a Tor Relay Node.
 # author           :TorWorld A Project Under The CryptoWorld Foundation.
-# contributors     :KsaRedFx, SPMedia, Lunar
-# date             :10-28-2016
-# version          :0.0.5 Alpha
+# contributors     :KsaRedFx, SPMedia, Lunar, NurdTurd
+# date             :12-5-2016
+# version          :0.0.6 Alpha
 # os               :Debian/Ubuntu
 # usage            :bash fastrelay.sh
 # notes            :If you have any problems feel free to email us: security[at]torworld.org
@@ -34,17 +34,56 @@ then
     apt-get install lsb-release
 fi
 
+# Checking if dialog is Installed
+if [ ! -x  /usr/bin/dialog ]; then
+    echo -e "\033[31mdialog Command Not Found\e[0m"
+    echo -e "\033[34mInstalling dialog, Please Wait...\e[0m"
+    apt-get install dialog
+fi
+
 # Getting Codename of the OS
 flavor=`lsb_release -cs`
 
 # Installing dependencies for Tor
 read -p "Do you want to fetch the core Tor dependencies? (Y/N)" REPLY
 if [ "${REPLY,,}" == "y" ]; then
-   echo deb http://deb.torproject.org/torproject.org $flavor main >> /etc/apt/sources.list.d/torproject.list
-   echo deb-src http://deb.torproject.org/torproject.org $flavor main >> /etc/apt/sources.list.d/torproject.list
-   gpg --keyserver keys.gnupg.net --recv 886DDD89
-   gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-fi
+
+  HEIGHT=20
+  WIDTH=120
+  CHOICE_HEIGHT=2
+  BACKTITLE="TorWorld | FastRelay"
+  TITLE="FastRelay Tor Build Setup"
+  MENU="Choose one of the following Build options:"
+
+  OPTIONS=(1 "Stable Build"
+           2 "Experimental Build")
+
+  CHOICE=$(dialog --clear \
+                  --backtitle "$BACKTITLE" \
+                  --title "$TITLE" \
+                  --menu "$MENU" \
+                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                  "${OPTIONS[@]}" \
+                  2>&1 >/dev/tty)
+
+  clear
+  case $CHOICE in
+          1)
+          echo deb http://deb.torproject.org/torproject.org $flavor main > /etc/apt/sources.list.d/torproject.list
+          echo deb-src http://deb.torproject.org/torproject.org $flavor main >> /etc/apt/sources.list.d/torproject.list
+          gpg --keyserver keys.gnupg.net --recv 886DDD89
+          gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+              ;;
+          2)
+          echo deb http://deb.torproject.org/torproject.org $flavor main > /etc/apt/sources.list.d/torproject.list
+          echo deb-src http://deb.torproject.org/torproject.org $flavor main >> /etc/apt/sources.list.d/torproject.list
+          echo deb http://deb.torproject.org/torproject.org tor-experimental-0.2.9.x-$flavor main >> /etc/apt/sources.list.d/torproject.list
+          echo deb-src http://deb.torproject.org/torproject.org tor-experimental-0.2.9.x-$flavor main >> /etc/apt/sources.list.d/torproject.list
+          gpg --keyserver keys.gnupg.net --recv 886DDD89
+          gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+              ;;
+  esac
+  clear
 
 # Updating / Upgrading System
 read -p "Do you wish to upgrade system packages? (Y/N)" REPLY
@@ -61,7 +100,6 @@ if [ "${REPLY,,}" == "y" ]; then
    service tor status
    echo "Stopping Tor service..."
    service tor stop
-fi
 
 # Customizing Tor RC file to suit your Relay
 # Nickname for Relay
@@ -88,6 +126,8 @@ echo "ContactInfo $Info" >> /etc/tor/torrc
 echo "Restarting the Tor service..."
 service tor restart
 
+fi
+
 # Installing TorARM
 read -p "Would you like to install Tor ARM to help monitor your Relay? (Y/N)" REPLY
 if [ "${REPLY,,}" == "y" ]; then
@@ -95,4 +135,5 @@ if [ "${REPLY,,}" == "y" ]; then
    echo "Fixing the Tor RC to allow Tor ARM"
    echo "DisableDebuggerAttachment 0" >> /etc/tor/torrc
    echo "To start TorARM just type: "arm""
+fi
 fi
