@@ -9,4 +9,4 @@ Log into your server via ssh and download the raw fastrelay.sh script and then e
 ##Notes
 If you have any problems feel free to email us: `security[at]torworld.org`
 
-Visit us at http://TorWorld.org
+Visit us at https://TorWorld.org
