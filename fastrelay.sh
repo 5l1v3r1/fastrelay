@@ -167,13 +167,13 @@
                 apt-get install nginx
                 service nginx status
               echo "Preventing Nginx from logging..."
-                curl -s "https://raw.githubusercontent.com/beardlyness/FastRelay/master/nginx/nginx.conf" > /etc/nginx/nginx.conf
+                curl -s "https://raw.githubusercontent.com/torworld/fastrelay/master/nginx/nginx.conf" > /etc/nginx/nginx.conf
               echo "Restarting the Nginx service..."
                 service nginx restart
-              echo "Grabbing fastexit-website-template from GitHub.."
-                wget -4 https://github.com/torworld/fastexit-website-template/archive/master.tar.gz -O - | tar -xz -C /usr/share/nginx/html/  && mv /usr/share/nginx/html/fastexit-website-template-master/* /usr/share/nginx/html/
+              echo "Grabbing fastrelay-website-template from GitHub.."
+                wget -4 https://github.com/torworld/fastrelay-website-template/archive/master.tar.gz -O - | tar -xz -C /usr/share/nginx/html/  && mv /usr/share/nginx/html/fastrelay-website-template-master/* /usr/share/nginx/html/
               echo "Removing temporary files/folders.."
-                rm -rf /usr/share/nginx/html/fastexit-website-template-master*
+                rm -rf /usr/share/nginx/html/fastrelay-website-template-master*
             ;;
           [nN]|[nN][oO])
             echo "You have said no? We cannot work without your permission!"
