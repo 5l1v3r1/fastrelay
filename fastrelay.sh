@@ -238,11 +238,11 @@
                 case $CHOICE in
                         1)
                             echo "Loading in a Passive ExitPolicy.."
-                            curl -s "https://raw.githubusercontent.com/torworld/fastrelay/master/policy/passive.s02018041301.exitlist.txt" >> /etc/tor/torrc
+                            curl -s "https://raw.githubusercontent.com/torworld/fastrelay/master/policy/passive.s02018042201.exitlist.txt" >> /etc/tor/torrc
                             ;;
                         2)
                             echo "Loading in a Browser Only ExitPolicy.."
-                            curl -s "https://raw.githubusercontent.com/torworld/fastrelay/master/policy/browser.s02018041301.exitlist.txt" >> /etc/tor/torrc
+                            curl -s "https://raw.githubusercontent.com/torworld/fastrelay/master/policy/browser.s02018042201.exitlist.txt" >> /etc/tor/torrc
                             ;;
                 esac
               clear
