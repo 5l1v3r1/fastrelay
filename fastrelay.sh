@@ -19,9 +19,9 @@
 # description      :Open-Proxy setup helper for Tor.
 # author           :TorWorld A Project Under The Crypto World Foundation.
 # contributors     :Beardlyness, Lunar, KsaRedFx, SPMedia, NurdTurd
-# date             :05-02-2018
-# version          :0.1.3 Beta
-# os               :Debian/Ubuntu
+# date             :11-15-2018
+# version          :0.1.4 Beta
+# os               :Debian/Ubuntu (Debian 8 - 9 | Ubuntu 14.04 - 18.04)
 # usage            :bash FastRelay.sh
 # notes            :If you have any problems feel free to email us: security [AT] torworld [DOT] org
 #===============================================================================================================================================
@@ -50,8 +50,8 @@
 
     experimental(){
         stable
-      echo deb http://deb.torproject.org/torproject.org tor-experimental-0.3.3.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src http://deb.torproject.org/torproject.org tor-experimental-0.3.3.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
     }
 
     nightly(){
@@ -192,7 +192,7 @@
                 echo "Machine Nickname is: '$REPLY' "
                 echo Nickname $REPLY > /etc/tor/torrc
               else
-                echo "Invalid Nickname."
+                echo "Invalid."
             fi
 
 # DirPort
@@ -225,7 +225,7 @@
 
             OPTIONS=(1 "Reduced ExitPolicy"
                      2 "Browser Only ExitPolicy"
-                     3 "NON-Exit Policy")
+                     3 "NON-Exit (RELAY ONLY) Policy")
 
             CHOICE=$(dialog --clear \
                             --backtitle "$BACKTITLE" \
@@ -246,20 +246,20 @@
                               wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/browser.s02018050201.exitlist.txt -O ->> /etc/tor/torrc
                             ;;
                         3)
-                            echo "Loading in NON-EXIT Policy"
+                            echo "Loading in NON-EXIT (RELAY ONLY) Policy"
                               wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/nonexit.s02018050201.list.txt -O ->> /etc/tor/torrc
                             ;;
                 esac
               clear
 
 # Contact Information
-            read -r -p "Contact Information (Example: abuse@example.com): " REPLY
+            read -r -p "Contact Information: " REPLY
               if [[ "${REPLY,,}"  =~  ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
                 then
-                  echo "Machines Contact info is: '$REPLY' | You can change it manually later on via ('/etc/tor/torrc')"
+                  echo "Machines Contact info is: '$REPLY' | You must enter a valid email address for now. You can change it manually later on via ('/etc/tor/torrc')"
                   echo ContactInfo $REPLY >> /etc/tor/torrc
                 else
-                  echo "You must enter a valid email address for now. You can change it manually later on via ('/etc/tor/torrc')"
+                  echo "Invalid."
               fi
 
 # Setup Arg for PIP+Nyx
