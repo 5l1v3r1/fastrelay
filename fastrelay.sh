@@ -19,15 +19,15 @@
 # description      :Open-Proxy setup helper for Tor.
 # author           :TorWorld A Project Under The Crypto World Foundation.
 # contributors     :Beardlyness, Lunar, KsaRedFx, SPMedia, NurdTurd
-# date             :04-05-2019
-# version          :0.1.6 Beta
+# date             :04-08-2019
+# version          :0.1.7 Beta
 # os               :Debian/Ubuntu (Debian 8 - 10 | Ubuntu 14.04 - 18.10)
 # usage            :bash FastRelay.sh
 # notes            :If you have any problems feel free to email us: security [AT] torworld [DOT] org
 #===============================================================================================================================================
 
 # Force check for root
-  if ! [ $(id -u) = 0 ]; then
+  if ! [ "$(id -u)" = 0 ]; then
     echo "You need to be logged in as root!"
     exit 1
   fi
@@ -51,8 +51,8 @@
 # Setting up different Tor branches to prep for install
     function tor_stable() {
       echo "Grabbing Stable build dependencies.."
-      echo deb http://deb.torproject.org/torproject.org $flavor main > /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src http://deb.torproject.org/torproject.org $flavor main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb http://deb.torproject.org/torproject.org "$flavor" main > /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src http://deb.torproject.org/torproject.org "$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
         apt install tor deb.torproject.org-keyring
         curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
         gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
@@ -62,28 +62,28 @@
     function tor_experimental() {
       echo "Grabbing Experimental build dependencies.."
         tor_stable
-      echo deb https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
     }
 
     function tor_nightly() {
       echo "Grabbing Nightly build dependencies.."
         tor_stable
-      echo deb http://deb.torproject.org/torproject.org tor-nightly-master-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src http://deb.torproject.org/torproject.org tor-nightly-master-$flavor main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb http://deb.torproject.org/torproject.org tor-nightly-master-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src http://deb.torproject.org/torproject.org tor-nightly-master-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
     }
 
     # Setting up different NGINX branches to prep for install
   function nginx_stable() {
-      echo deb http://nginx.org/packages/$system/ $flavor nginx > /etc/apt/sources.list.d/$flavor.nginx.stable.list
-      echo deb-src http://nginx.org/packages/$system/ $flavor nginx >> /etc/apt/sources.list.d/$flavor.nginx.stable.list
+      echo deb http://nginx.org/packages/"$system"/ "$flavor" nginx > /etc/apt/sources.list.d/"$flavor".nginx.stable.list
+      echo deb-src http://nginx.org/packages/"$system"/ "$flavor" nginx >> /etc/apt/sources.list.d/"$flavor".nginx.stable.list
         wget https://nginx.org/keys/nginx_signing.key
         apt-key add nginx_signing.key
     }
 
   function nginx_mainline() {
-      echo deb http://nginx.org/packages/mainline/$system/ $flavor nginx > /etc/apt/sources.list.d/$flavor.nginx.mainline.list
-      echo deb-src http://nginx.org/packages/mainline/$system/ $flavor nginx >> /etc/apt/sources.list.d/$flavor.nginx.mainline.list
+      echo deb http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx > /etc/apt/sources.list.d/"$flavor".nginx.mainline.list
+      echo deb-src http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx >> /etc/apt/sources.list.d/"$flavor".nginx.mainline.list
         wget https://nginx.org/keys/nginx_signing.key
         apt-key add nginx_signing.key
     }
@@ -151,8 +151,8 @@
     fi
 
 # Grabbing info on active machine.
-      flavor=`lsb_release -cs`
-      system=`lsb_release -i | grep "Distributor ID:" | sed 's/Distributor ID://g' | sed 's/["]//g' | awk '{print tolower($1)}'`
+      flavor=$(lsb_release -cs)
+      system=$(lsb_release -i | grep "Distributor ID:" | sed 's/Distributor ID://g' | sed 's/["]//g' | awk '{print tolower($1)}')
 
 # Backlinking Tor dependencies for APT.
           read -r -p "Do you want to fetch the core Tor dependencies? (Y/N) " REPLY
@@ -205,8 +205,8 @@
           read -r -p "Nickname: " REPLY
             if [[ "${REPLY,,}"  =~  ^([a-zA-Z])+$ ]]
               then
-                echo "Machine Nickname is: '$REPLY' "
-                echo Nickname $REPLY > /etc/tor/torrc
+                echo "Machine Nickname is: '""$REPLY""' "
+                echo Nickname "$REPLY" > /etc/tor/torrc
               else
                 echo "Invalid."
             fi
@@ -215,8 +215,8 @@
           read -r -p "DirPort (Example: 9030): " REPLY
             if [[ "${REPLY,,}"  =~  ^([0-9])+$ ]]
               then
-                echo "Machine DirPort is: '$REPLY' "
-                echo DirPort $REPLY >> /etc/tor/torrc
+                echo "Machine DirPort is: '""$REPLY""' "
+                echo DirPort "$REPLY" >> /etc/tor/torrc
               else
                 echo "You did not input any numbers."
             fi
@@ -225,8 +225,8 @@
           read -r -p "ORPort (Example: 9001): " REPLY
             if [[ "${REPLY,,}"  =~  ^([0-9])+$ ]]
               then
-                echo "Machine ORPort is: '$REPLY' "
-                echo ORPort $REPLY >> /etc/tor/torrc
+                echo "Machine ORPort is: '""$REPLY""' "
+                echo ORPort "$REPLY" >> /etc/tor/torrc
               else
                 echo "You did not input any numbers."
             fi
@@ -329,7 +329,7 @@
               if [[ "${REPLY,,}"  =~  ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
                 then
                   echo "Machines Contact info is: '$REPLY' | You must enter a valid email address for now. You can change it manually later on via ('/etc/tor/torrc')"
-                  echo ContactInfo $REPLY >> /etc/tor/torrc
+                  echo ContactInfo "$REPLY" >> /etc/tor/torrc
                 else
                   echo "Invalid."
               fi
