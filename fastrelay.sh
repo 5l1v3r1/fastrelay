@@ -19,9 +19,9 @@
 # description      :Open-Proxy setup helper for Tor.
 # author           :TorWorld A Project Under The Crypto World Foundation.
 # contributors     :Beardlyness, Lunar, KsaRedFx, SPMedia, NurdTurd
-# date             :04-08-2019
-# version          :0.1.7 Beta
-# os               :Debian/Ubuntu (Debian 8 - 10 | Ubuntu 14.04 - 18.10)
+# date             :05-01-2019
+# version          :0.1.8 Beta
+# os               :Debian/Ubuntu
 # usage            :bash FastRelay.sh
 # notes            :If you have any problems feel free to email us: security [AT] torworld [DOT] org
 #===============================================================================================================================================
@@ -31,6 +31,13 @@
     echo "You need to be logged in as root!"
     exit 1
   fi
+
+# Setup calls for Tor: Stable, Experimental, and Nightly. Sets up Call for Policy for URL, and the Torrc for Mapping in script.
+    P_Tor_Stable="https://deb.torproject.org/torproject.org"
+    P_Tor_Experimental="tor-experimental-0.3.4.x"
+    P_Tor_Nightly="tor-nightly-master"
+    P_Tor_Policy="https://raw.githubusercontent.com/torworld/fastrelay/master/policy"
+    P_Tor_Torrc="/etc/tor/torrc"
 
 # Setting up an update/upgrade glabal function
     function upkeep() {
@@ -51,10 +58,10 @@
 # Setting up different Tor branches to prep for install
     function tor_stable() {
       echo "Grabbing Stable build dependencies.."
-      echo deb http://deb.torproject.org/torproject.org "$flavor" main > /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src http://deb.torproject.org/torproject.org "$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$flavor" main > /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
         apt install tor deb.torproject.org-keyring
-        curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
+        curl "$P_Tor_Stable"/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
         gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
         gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     }
@@ -62,15 +69,15 @@
     function tor_experimental() {
       echo "Grabbing Experimental build dependencies.."
         tor_stable
-      echo deb https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src https://deb.torproject.org/torproject.org tor-experimental-0.3.4.x-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
     }
 
     function tor_nightly() {
       echo "Grabbing Nightly build dependencies.."
         tor_stable
-      echo deb http://deb.torproject.org/torproject.org tor-nightly-master-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src http://deb.torproject.org/torproject.org tor-nightly-master-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
     }
 
     # Setting up different NGINX branches to prep for install
@@ -114,45 +121,23 @@
 # START
 
 # Checking for multiple "required" pieces of software.
-    if
-      echo -e "\033[92mPerforming upkeep of system packages.. \e[0m"
-        upkeep
-      echo -e "\033[92mChecking software list..\e[0m"
+    tools=( lsb_release wget curl dialog socat dirmngr apt-transport-https ca-certificates )
+     grab_eware=""
+       for e in "${tools[@]}"; do
+         if command -v "$e" >/dev/null 2>&1; then
+           echo "Dependency $e is installed.."
+         else
+           echo "Dependency $e is not installed..?"
+            upkeep
+            grab_eware="$grab_eware $e"
+         fi
+       done
+      apt-get install $grab_eware
 
-      [ ! -x  /usr/bin/lsb_release ] || [ ! -x  /usr/bin/curl ] || [ ! -x  /usr/bin/wget ] || [ ! -x  /usr/bin/apt-transport-https ] || [ ! -x  /usr/bin/dirmngr ] || [ ! -x  /usr/bin/ca-certificates ] || [ ! -x  /usr/bin/dialog ] ; then
+    # Grabbing info on active machine.
+        flavor=$(lsb_release -cs)
+        system=$(lsb_release -i | grep "Distributor ID:" | sed 's/Distributor ID://g' | sed 's/["]//g' | awk '{print tolower($1)}')
 
-        echo -e "\033[92mlsb_release: checking for software..\e[0m"
-        echo -e "\033[34mInstalling lsb_release, Please Wait...\e[0m"
-          apt-get install lsb-release
-
-        echo -e "\033[92mwget: checking for software..\e[0m"
-        echo -e "\033[34mInstalling wget, Please Wait...\e[0m"
-          apt-get install wget
-
-        echo -e "\033[92mcurl: checking for software..\e[0m"
-        echo -e "\033[34mInstalling curl, Please Wait...\e[0m"
-          apt-get install curl
-
-        echo -e "\033[92mapt-transport-https: checking for software..\e[0m"
-        echo -e "\033[34mInstalling apt-transport-https, Please Wait...\e[0m"
-          apt-get install apt-transport-https
-
-        echo -e "\033[92mdirmngr: checking for software..\e[0m"
-        echo -e "\033[34mInstalling dirmngr, Please Wait...\e[0m"
-          apt-get install dirmngr
-
-        echo -e "\033[92mca-certificates: checking for software..\e[0m"
-        echo -e "\033[34mInstalling ca-certificates, Please Wait...\e[0m"
-          apt-get install ca-certificates
-
-        echo -e "\033[92mdialog: checking for software..\e[0m"
-        echo -e "\033[34mInstalling dialog, Please Wait...\e[0m"
-          apt-get install dialog
-    fi
-
-# Grabbing info on active machine.
-      flavor=$(lsb_release -cs)
-      system=$(lsb_release -i | grep "Distributor ID:" | sed 's/Distributor ID://g' | sed 's/["]//g' | awk '{print tolower($1)}')
 
 # Backlinking Tor dependencies for APT.
           read -r -p "Do you want to fetch the core Tor dependencies? (Y/N) " REPLY
@@ -206,7 +191,7 @@
             if [[ "${REPLY,,}"  =~  ^([a-zA-Z])+$ ]]
               then
                 echo "Machine Nickname is: '""$REPLY""' "
-                echo Nickname "$REPLY" > /etc/tor/torrc
+                echo Nickname "$REPLY" > "$P_Tor_Torrc"
               else
                 echo "Invalid."
             fi
@@ -216,7 +201,7 @@
             if [[ "${REPLY,,}"  =~  ^([0-9])+$ ]]
               then
                 echo "Machine DirPort is: '""$REPLY""' "
-                echo DirPort "$REPLY" >> /etc/tor/torrc
+                echo DirPort "$REPLY" >> "$P_Tor_Torrc"
               else
                 echo "You did not input any numbers."
             fi
@@ -226,7 +211,7 @@
             if [[ "${REPLY,,}"  =~  ^([0-9])+$ ]]
               then
                 echo "Machine ORPort is: '""$REPLY""' "
-                echo ORPort "$REPLY" >> /etc/tor/torrc
+                echo ORPort "$REPLY" >> "$P_Tor_Torrc"
               else
                 echo "You did not input any numbers."
             fi
@@ -256,19 +241,19 @@
                 case $CHOICE in
                         1)
                             echo "Loading in a Passive ExitPolicy.."
-                              wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/passive.s02018050201.exitlist.txt -O ->> /etc/tor/torrc
+                              wget "$P_Tor_Policy"/passive.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         2)
                             echo "Loading in a Browser Only ExitPolicy.."
-                              wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/browser.s02018050201.exitlist.txt -O ->> /etc/tor/torrc
+                              wget "$P_Tor_Policy"/browser.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         3)
                             echo "Loading in NON-EXIT (RELAY ONLY) Policy"
-                              wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/nonexit.s02018050201.list.txt -O ->> /etc/tor/torrc
+                              wget "$P_Tor_Policy"/nonexit.s02018050201.list.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         4)
                             echo "Loading in Bridge Only (Unlisted Bridge) Policy"
-                              wget https://raw.githubusercontent.com/torworld/fastrelay/master/policy/bridge.s02019011501.list -O ->> /etc/tor/torrc
+                              wget "$P_Tor_Policy"/bridge.s02019011501.list -O ->> "$P_Tor_Torrc"
                             ;;
                 esac
               clear
@@ -328,8 +313,8 @@
             read -r -p "Contact Information: " REPLY
               if [[ "${REPLY,,}"  =~  ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
                 then
-                  echo "Machines Contact info is: '$REPLY' | You must enter a valid email address for now. You can change it manually later on via ('/etc/tor/torrc')"
-                  echo ContactInfo "$REPLY" >> /etc/tor/torrc
+                  echo "Machines Contact info is: '$REPLY' | You must enter a valid email address for now. You can change it manually later on via ($P_Tor_Torrc)"
+                  echo ContactInfo "$REPLY" >> "$P_Tor_Torrc"
                 else
                   echo "Invalid."
               fi
@@ -341,7 +326,7 @@
               echo "Setting up Python-PIP in order to install Nyx.."
                 apt-get install python-pip
                 pip install nyx
-              echo -e "ControlPort 9051\nCookieAuthentication 1" >> /etc/tor/torrc
+              echo -e "ControlPort 9051\nCookieAuthentication 1" >> "$P_Tor_Torrc"
                 upkeep
                 service tor restart
             ;;
