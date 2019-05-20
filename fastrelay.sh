@@ -19,8 +19,8 @@
 # description      :Open-Proxy setup helper for Tor.
 # author           :TorWorld A Project Under The Crypto World Foundation.
 # contributors     :Beardlyness, Lunar, KsaRedFx, SPMedia, NurdTurd
-# date             :05-01-2019
-# version          :0.1.8 Beta
+# date             :05-19-2019
+# version          :0.1.9 Beta
 # os               :Debian/Ubuntu
 # usage            :bash FastRelay.sh
 # notes            :If you have any problems feel free to email us: security [AT] torworld [DOT] org
@@ -32,12 +32,14 @@
     exit 1
   fi
 
-# Setup calls for Tor: Stable, Experimental, and Nightly. Sets up Call for Policy for URL, and the Torrc for Mapping in script.
+# Setup calls for Tor: Stable, Experimental, and Nightly. Also sets up calls for Project: GitHub, Torrc, Web Directory, and Repository Paths for mapping in script.
     P_Tor_Stable="https://deb.torproject.org/torproject.org"
     P_Tor_Experimental="tor-experimental-0.3.4.x"
     P_Tor_Nightly="tor-nightly-master"
-    P_Tor_Policy="https://raw.githubusercontent.com/torworld/fastrelay/master/policy"
+    P_GH_URL="https://raw.githubusercontent.com/torworld/fastrelay/master"
     P_Tor_Torrc="/etc/tor/torrc"
+    P_WEB_DIR="/usr/share/nginx/html"
+    P_REPO_PATH="/etc/apt/sources.list.d"
 
 # Setting up an update/upgrade glabal function
     function upkeep() {
@@ -58,8 +60,8 @@
 # Setting up different Tor branches to prep for install
     function tor_stable() {
       echo "Grabbing Stable build dependencies.."
-      echo deb "$P_Tor_Stable" "$flavor" main > /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src "$P_Tor_Stable" "$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$flavor" main > "$P_REPO_PATH"/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$flavor" main >> "$P_REPO_PATH"/repo.torproject.list
         apt install tor deb.torproject.org-keyring
         curl "$P_Tor_Stable"/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
         gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
@@ -69,28 +71,28 @@
     function tor_experimental() {
       echo "Grabbing Experimental build dependencies.."
         tor_stable
-      echo deb "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> "$P_REPO_PATH"/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$P_Tor_Experimental"-"$flavor" main >> "$P_REPO_PATH"/repo.torproject.list
     }
 
     function tor_nightly() {
       echo "Grabbing Nightly build dependencies.."
         tor_stable
-      echo deb "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
-      echo deb-src "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> /etc/apt/sources.list.d/repo.torproject.list
+      echo deb "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> "$P_REPO_PATH"/repo.torproject.list
+      echo deb-src "$P_Tor_Stable" "$P_Tor_Nightly"-"$flavor" main >> "$P_REPO_PATH"/repo.torproject.list
     }
 
     # Setting up different NGINX branches to prep for install
   function nginx_stable() {
-      echo deb http://nginx.org/packages/"$system"/ "$flavor" nginx > /etc/apt/sources.list.d/"$flavor".nginx.stable.list
-      echo deb-src http://nginx.org/packages/"$system"/ "$flavor" nginx >> /etc/apt/sources.list.d/"$flavor".nginx.stable.list
+      echo deb http://nginx.org/packages/"$system"/ "$flavor" nginx > "$P_REPO_PATH"/"$flavor".nginx.stable.list
+      echo deb-src http://nginx.org/packages/"$system"/ "$flavor" nginx >> "$P_REPO_PATH"/"$flavor".nginx.stable.list
         wget https://nginx.org/keys/nginx_signing.key
         apt-key add nginx_signing.key
     }
 
   function nginx_mainline() {
-      echo deb http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx > /etc/apt/sources.list.d/"$flavor".nginx.mainline.list
-      echo deb-src http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx >> /etc/apt/sources.list.d/"$flavor".nginx.mainline.list
+      echo deb http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx > "$P_REPO_PATH"/"$flavor".nginx.mainline.list
+      echo deb-src http://nginx.org/packages/mainline/"$system"/ "$flavor" nginx >> "$P_REPO_PATH"/"$flavor".nginx.mainline.list
         wget https://nginx.org/keys/nginx_signing.key
         apt-key add nginx_signing.key
     }
@@ -104,17 +106,17 @@
           ulimit -n 65536
           ulimit -a
         echo "Setting up Security Limits.."
-          wget -O /etc/security/limits.conf https://raw.githubusercontent.com/torworld/fastrelay/master/etc/security/limits.conf
+          wget -O /etc/security/limits.conf "$P_GH_URL"/etc/security/limits.conf
         echo "Setting up background NGINX workers.."
-          wget -O /etc/default/nginx https://raw.githubusercontent.com/torworld/fastrelay/master/etc/default/nginx
+          wget -O /etc/default/nginx "$P_GH_URL"/etc/default/nginx
           echo "Setting up configuration file for NGINX main configuration.."
-            wget -O /etc/nginx/nginx.conf https://raw.githubusercontent.com/torworld/fastrelay/master/nginx/nginx.conf
+            wget -O /etc/nginx/nginx.conf "$P_GH_URL"/nginx/nginx.conf
         echo "Restarting the NGINX service..."
         service nginx restart
         echo "Grabbing fastrelay-website-template from GitHub.."
-          wget https://github.com/torworld/fastrelay-website-template/archive/master.tar.gz -O - | tar -xz -C /usr/share/nginx/html/  && mv /usr/share/nginx/html/fastrelay-website-template-master/* /usr/share/nginx/html/
+          wget https://github.com/torworld/fastrelay-website-template/archive/master.tar.gz -O - | tar -xz -C "$P_WEB_DIR"/  && mv "$P_WEB_DIR"/fastrelay-website-template-master/* "$P_WEB_DIR"/
         echo "Removing temporary files/folders.."
-          rm -rf /usr/share/nginx/html/fastrelay-website-template-master*
+          rm -rf "$P_WEB_DIR"/fastrelay-website-template-master*
       }
 
 
@@ -241,19 +243,19 @@
                 case $CHOICE in
                         1)
                             echo "Loading in a Passive ExitPolicy.."
-                              wget "$P_Tor_Policy"/passive.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
+                              wget "$P_GH_URL"/policy/passive.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         2)
                             echo "Loading in a Browser Only ExitPolicy.."
-                              wget "$P_Tor_Policy"/browser.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
+                              wget "$P_GH_URL"/policy/browser.s02018050201.exitlist.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         3)
                             echo "Loading in NON-EXIT (RELAY ONLY) Policy"
-                              wget "$P_Tor_Policy"/nonexit.s02018050201.list.txt -O ->> "$P_Tor_Torrc"
+                              wget "$P_GH_URL"/policy/nonexit.s02018050201.list.txt -O ->> "$P_Tor_Torrc"
                             ;;
                         4)
                             echo "Loading in Bridge Only (Unlisted Bridge) Policy"
-                              wget "$P_Tor_Policy"/bridge.s02019011501.list -O ->> "$P_Tor_Torrc"
+                              wget "$P_GH_URL"/policy/bridge.s02019011501.list -O ->> "$P_Tor_Torrc"
                             ;;
                 esac
               clear
