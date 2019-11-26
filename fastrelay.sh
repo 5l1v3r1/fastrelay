@@ -50,8 +50,8 @@
     }
 
 # Setting up a Tor installer + status check with hault
-    function torstall() {
-      echo "Performing torstall.."
+    function tor_install() {
+      echo "Performing tor_install.."
         apt-get install tor
         service tor status
         service tor stop
@@ -171,17 +171,17 @@
               1)
                 tor_stable
                 upkeep
-                torstall
+                tor_install
                 ;;
               2)
                 tor_experimental
                 upkeep
-                torstall
+                tor_install
                 ;;
               3)
                 tor_nightly
                 upkeep
-                torstall
+                tor_install
                 ;;
             esac
         clear
