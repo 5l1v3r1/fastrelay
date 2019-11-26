@@ -41,7 +41,7 @@
     P_WEB_DIR="/usr/share/nginx/html"
     P_REPO_PATH="/etc/apt/sources.list.d"
 
-# Setting up an update/upgrade glabal function
+# Setting up an update/upgrade global function
     function upkeep() {
       echo "Performing upkeep.."
         apt-get update -y
