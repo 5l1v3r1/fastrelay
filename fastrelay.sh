@@ -138,7 +138,7 @@
 
     # Grabbing info on active machine.
         flavor=$(lsb_release -cs)
-        system=$(lsb_release -i | grep "Distributor ID:" | sed 's/Distributor ID://g' | sed 's/["]//g' | awk '{print tolower($1)}')
+        system=$(lsb_release -is | awk '{print tolower($1)}')
 
 
 # Backlinking Tor dependencies for APT.
